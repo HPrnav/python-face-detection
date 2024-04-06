@@ -3,6 +3,18 @@ import pickle
 import os
 import face_recognition
 
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
+from firebase_admin import storage
+cred = credentials.Certificate("serviceAccountKey.json")
+firebase_admin.initialize_app(cred,{
+    'databaseURL':"https://students-attendence-9b56a-default-rtdb.firebaseio.com/",
+    'storageBucket':"students-attendence-9b56a.appspot.com"
+    
+})
+ref=db.reference("students")
+
 
 # making a list of the num py  array of the faces and along side adding the id with the face encoding
 folder_face='faces'                               #saving the folder name in form of string
@@ -13,6 +25,11 @@ student_id=[]                                # the imread function returns the n
 for path in pathlist_face:  
     image_list_face.append(cv2.imread(os.path.join(folder_face,path)))
     student_id.append(os.path.splitext(path)[0])
+    
+    filename= f'{folder_face}/{path}'
+    bucket=storage.bucket()
+    blob=bucket.blob(filename)
+    blob.upload_from_filename(filename)
      
 #function to conver the image into encoding
 def find_encode(image_list_faces):              
@@ -30,4 +47,4 @@ encoded_listwithid=[encoded_list,student_id]             # list which contain th
 file=open("encoding.p",'wb')
 pickle.dump(encoded_listwithid,file)
 file.close()
-print("file saved")
+# print("file saved")
